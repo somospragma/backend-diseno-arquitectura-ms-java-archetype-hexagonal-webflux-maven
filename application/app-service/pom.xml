@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent><groupId>co.com.pragma</groupId><artifactId>accounts-service</artifactId><version>1.0.0</version><relativePath>../../pom.xml</relativePath></parent>
+    <artifactId>app-service</artifactId>
+    <name>application-app-service</name>
+
+    <dependencies>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>model</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>ports</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>usecases</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>helpers</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>reactive-web</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>grpc</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>r2dbc-persistence</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>external-api</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>dynamodb-persistence</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>sqs-consumer</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>redis-cache</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>caffeine-cache</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>event-publisher</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>sns-publisher</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>kafka-messaging</artifactId></dependency>
+
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webflux</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-r2dbc</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
+        <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webflux-ui</artifactId></dependency>
+        <dependency><groupId>net.logstash.logback</groupId><artifactId>logstash-logback-encoder</artifactId></dependency>
+        <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
+        <dependency><groupId>org.postgresql</groupId><artifactId>r2dbc-postgresql</artifactId><scope>runtime</scope></dependency>
+
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.projectreactor</groupId><artifactId>reactor-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.projectreactor.tools</groupId><artifactId>blockhound</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.r2dbc</groupId><artifactId>r2dbc-h2</artifactId><scope>test</scope></dependency>
+    </dependencies>
+
+    <build>
+        <finalName>accounts-service</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration><mainClass>co.com.pragma.accounts.application.MainApplication</mainClass></configuration>
+                <executions><execution><goals><goal>repackage</goal></goals></execution></executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                    <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

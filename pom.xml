@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>co.com.pragma</groupId>
+    <artifactId>accounts-service</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>accounts-service (parent)</name>
+    <description>Artefacto showcase Java WebFlux hexagonal reactivo (Maven) - Pragma</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <spring-boot.version>4.0.9</spring-boot.version>
+        <reactor-bom.version>2024.0.6</reactor-bom.version>
+        <awssdk.version>2.29.20</awssdk.version>
+        <lombok.version>1.18.36</lombok.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <archunit.version>1.3.0</archunit.version>
+        <blockhound.version>1.0.9.RELEASE</blockhound.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+        <logstash-encoder.version>8.0</logstash-encoder.version>
+        <springdoc.version>2.7.0</springdoc.version>
+        <mockito.version>5.14.2</mockito.version>
+        <reactor-kafka.version>1.3.23</reactor-kafka.version>
+        <grpc.version>1.85.1</grpc.version>
+        <protobuf.version>3.25.9</protobuf.version>
+        <!-- Parches de seguridad (CVE) de transitivas no gestionadas por el BOM de Boot -->
+        <lz4.version>1.11.4</lz4.version>
+        <snappy.version>1.1.10.9</snappy.version>
+        <guava.version>33.7.2-jre</guava.version>
+        <scram.version>3.3</scram.version>
+        <reactor-grpc.version>1.2.4</reactor-grpc.version>
+        <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+        <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
+        <surefire.version>3.5.2</surefire.version>
+        <compiler.version>3.13.0</compiler.version>
+
+        <jacoco.version>0.8.12</jacoco.version>
+        <pitest.version>1.19.0</pitest.version>
+        <pitest-junit5.version>1.2.1</pitest-junit5.version>
+        <owasp.version>12.1.0</owasp.version>
+
+        <!-- Gate de cobertura del artefacto -->
+        <coverage.min>0.90</coverage.min>
+    </properties>
+
+    <modules>
+        <module>domain/model</module>
+        <module>domain/ports</module>
+        <module>domain/usecases</module>
+        <module>infrastructure/helpers</module>
+        <module>infrastructure/entry-points/reactive-web</module>
+        <module>infrastructure/entry-points/grpc</module>
+        <module>infrastructure/driven-adapters/r2dbc-persistence</module>
+        <module>infrastructure/driven-adapters/external-api</module>
+        <module>infrastructure/driven-adapters/dynamodb-persistence</module>
+        <module>infrastructure/driven-adapters/sqs-consumer</module>
+        <module>infrastructure/driven-adapters/redis-cache</module>
+        <module>infrastructure/driven-adapters/caffeine-cache</module>
+        <module>infrastructure/driven-adapters/event-publisher</module>
+        <module>infrastructure/driven-adapters/sns-publisher</module>
+        <module>infrastructure/driven-adapters/kafka-messaging</module>
+        <module>application/app-service</module>
+        <module>coverage-report</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-bom</artifactId>
+                <version>${reactor-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-bom</artifactId>
+                <version>${resilience4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-bom</artifactId>
+                <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Kafka reactivo y gRPC (gestion de versiones) -->
+            <dependency><groupId>io.projectreactor.kafka</groupId><artifactId>reactor-kafka</artifactId><version>${reactor-kafka.version}</version></dependency>
+            <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId><version>${protobuf.version}</version></dependency>
+            <dependency><groupId>com.salesforce.servicelibs</groupId><artifactId>reactor-grpc-stub</artifactId><version>${reactor-grpc.version}</version></dependency>
+
+            <!-- Parches de seguridad (CVE): una entrada directa le gana a los BOMs importados.
+                 Solo fija la version si la libreria ya llega al grafo (kafka -> lz4/snappy,
+                 gRPC -> guava, driver Postgres -> scram). -->
+            <dependency><groupId>at.yawk.lz4</groupId><artifactId>lz4-java</artifactId><version>${lz4.version}</version></dependency>
+            <dependency><groupId>org.xerial.snappy</groupId><artifactId>snappy-java</artifactId><version>${snappy.version}</version></dependency>
+            <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>${guava.version}</version></dependency>
+            <dependency><groupId>com.ongres.scram</groupId><artifactId>scram-client</artifactId><version>${scram.version}</version></dependency>
+            <dependency><groupId>com.ongres.scram</groupId><artifactId>scram-common</artifactId><version>${scram.version}</version></dependency>
+
+            <!-- Modulos internos -->
+            <dependency><groupId>co.com.pragma</groupId><artifactId>model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>ports</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>usecases</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>helpers</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>reactive-web</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>grpc</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>r2dbc-persistence</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>external-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>dynamodb-persistence</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>sqs-consumer</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>redis-cache</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>caffeine-cache</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>event-publisher</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>sns-publisher</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>kafka-messaging</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>co.com.pragma</groupId><artifactId>app-service</artifactId><version>${project.version}</version></dependency>
+
+            <dependency><groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId><version>${mapstruct.version}</version></dependency>
+            <dependency><groupId>net.logstash.logback</groupId><artifactId>logstash-logback-encoder</artifactId><version>${logstash-encoder.version}</version></dependency>
+            <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webflux-ui</artifactId><version>${springdoc.version}</version></dependency>
+            <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId><version>${archunit.version}</version><scope>test</scope></dependency>
+            <dependency><groupId>io.projectreactor.tools</groupId><artifactId>blockhound</artifactId><version>${blockhound.version}</version><scope>test</scope></dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${compiler.version}</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <annotationProcessorPaths>
+                            <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version></path>
+                            <path><groupId>org.mapstruct</groupId><artifactId>mapstruct-processor</artifactId><version>${mapstruct.version}</version></path>
+                            <path><groupId>org.projectlombok</groupId><artifactId>lombok-mapstruct-binding</artifactId><version>${lombok-mapstruct-binding.version}</version></path>
+                        </annotationProcessorPaths>
+                        <compilerArgs><arg>-Amapstruct.suppressGeneratorTimestamp=true</arg></compilerArgs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire.version}</version>
+                    <configuration>
+                        <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods</argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution><id>prepare-agent</id><goals><goal>prepare-agent</goal></goals></execution>
+                        <execution><id>report</id><phase>test</phase><goals><goal>report</goal></goals></execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.pitest</groupId>
+                    <artifactId>pitest-maven</artifactId>
+                    <version>${pitest.version}</version>
+                    <dependencies>
+                        <dependency><groupId>org.pitest</groupId><artifactId>pitest-junit5-plugin</artifactId><version>${pitest-junit5.version}</version></dependency>
+                    </dependencies>
+                    <configuration><mutationThreshold>60</mutationThreshold></configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${owasp.version}</version>
+                    <configuration><failBuildOnCVSS>7</failBuildOnCVSS></configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

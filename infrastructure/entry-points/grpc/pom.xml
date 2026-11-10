@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent><groupId>co.com.pragma</groupId><artifactId>accounts-service</artifactId><version>1.0.0</version><relativePath>../../../pom.xml</relativePath></parent>
+    <artifactId>grpc</artifactId>
+    <name>entry-point-grpc</name>
+
+    <dependencies>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>model</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>ports</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>usecases</artifactId></dependency>
+
+        <dependency><groupId>io.grpc</groupId><artifactId>grpc-stub</artifactId></dependency>
+        <dependency><groupId>io.grpc</groupId><artifactId>grpc-protobuf</artifactId></dependency>
+        <dependency><groupId>io.grpc</groupId><artifactId>grpc-netty-shaded</artifactId><scope>runtime</scope></dependency>
+        <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></dependency>
+        <dependency><groupId>com.salesforce.servicelibs</groupId><artifactId>reactor-grpc-stub</artifactId></dependency>
+        <dependency><groupId>io.projectreactor</groupId><artifactId>reactor-core</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-autoconfigure</artifactId></dependency>
+        <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version><scope>provided</scope></dependency>
+        <!-- Necesario para compilar el codigo generado (javax.annotation.Generated). -->
+        <dependency><groupId>org.apache.tomcat</groupId><artifactId>annotations-api</artifactId><version>6.0.53</version><scope>provided</scope></dependency>
+
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.projectreactor</groupId><artifactId>reactor-test</artifactId><scope>test</scope></dependency>
+        <dependency><groupId>io.grpc</groupId><artifactId>grpc-inprocess</artifactId><scope>test</scope></dependency>
+    </dependencies>
+
+    <build>
+        <!-- os-maven-plugin detecta ${os.detected.classifier} para elegir el protoc binario. -->
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>${os-maven-plugin.version}</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>${protobuf-maven-plugin.version}</version>
+                <configuration>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                    <!-- Plugin extra: Reactor gRPC (stubs Mono/Flux). -->
+                    <protocPlugins>
+                        <protocPlugin>
+                            <id>reactor-grpc</id>
+                            <groupId>com.salesforce.servicelibs</groupId>
+                            <artifactId>reactor-grpc</artifactId>
+                            <version>${reactor-grpc.version}</version>
+                            <mainClass>com.salesforce.reactorgrpc.ReactorGrpcGenerator</mainClass>
+                        </protocPlugin>
+                    </protocPlugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

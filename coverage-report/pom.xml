@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent><groupId>co.com.pragma</groupId><artifactId>accounts-service</artifactId><version>1.0.0</version><relativePath>../pom.xml</relativePath></parent>
+    <artifactId>coverage-report</artifactId>
+    <name>coverage-report</name>
+    <description>Reporte de cobertura agregado (report-aggregate) + gate 90% con exclusiones</description>
+
+    <!-- Depende de todos los modulos con codigo para agregar su ejecucion JaCoCo. -->
+    <dependencies>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>model</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>ports</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>usecases</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>helpers</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>reactive-web</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>grpc</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>r2dbc-persistence</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>external-api</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>dynamodb-persistence</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>sqs-consumer</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>redis-cache</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>caffeine-cache</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>event-publisher</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>sns-publisher</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>kafka-messaging</artifactId></dependency>
+        <dependency><groupId>co.com.pragma</groupId><artifactId>app-service</artifactId></dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Copia las clases COMPILADAS de cada modulo (los mismos .class que
+                 produjeron los jacoco.exec) a target/classes, para que jacoco:check
+                 case los class-id exactamente y no de falsos negativos por recompilacion. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-module-classes</id>
+                        <phase>process-test-classes</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <resources>
+                                <resource><directory>${project.basedir}/../domain/model/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../domain/ports/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../domain/usecases/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/helpers/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/entry-points/reactive-web/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/entry-points/grpc/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/r2dbc-persistence/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/external-api/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/dynamodb-persistence/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/sqs-consumer/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/redis-cache/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/caffeine-cache/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/event-publisher/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/sns-publisher/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../infrastructure/driven-adapters/kafka-messaging/target/classes</directory></resource>
+                                <resource><directory>${project.basedir}/../application/app-service/target/classes</directory></resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <!-- Desactiva el prepare-agent/report heredados del padre en este
+                         modulo agregador: no tiene codigo propio que instrumentar. -->
+                    <execution>
+                        <id>prepare-agent</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>none</phase>
+                    </execution>
+                    <!-- Genera el reporte HTML/XML agregado (informativo, sin filtro). -->
+                    <execution>
+                        <id>report-aggregate</id>
+                        <phase>verify</phase>
+                        <goals><goal>report-aggregate</goal></goals>
+                    </execution>
+                    <!-- Fusiona todos los jacoco.exec de los modulos en uno solo,
+                         para que el goal check tenga datos reales que evaluar. -->
+                    <execution>
+                        <id>merge-all</id>
+                        <phase>verify</phase>
+                        <goals><goal>merge</goal></goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.basedir}/..</directory>
+                                    <includes>
+                                        <include>**/target/jacoco.exec</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>coverage-report/target/jacoco.exec</exclude>
+                                    </excludes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/aggregate.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <!-- Aplica el gate 90% de linea sobre los datos fusionados,
+                         con exclusiones sensatas (mismo criterio que el build Gradle). -->
+                    <execution>
+                        <id>check-aggregate</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/aggregate.exec</dataFile>
+                            <excludes>
+                                <exclude>**/MainApplication.*</exclude>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/*Config.*</exclude>
+                                <exclude>**/*Config$*.*</exclude>
+                                <exclude>**/*Properties.*</exclude>
+                                <exclude>**/*Request.*</exclude>
+                                <exclude>**/*Response.*</exclude>
+                                <exclude>**/*Dto.*</exclude>
+                                <exclude>**/*Item.*</exclude>
+                                <exclude>**/*Entity.*</exclude>
+                                <exclude>**/*MapperImpl.*</exclude>
+                                <exclude>**/*Mapper.*</exclude>
+                                <exclude>**/exception/**</exclude>
+                                <exclude>**/*Exception.*</exclude>
+                                <exclude>**/sensitive/**</exclude>
+                                <exclude>**/*WebClientConfig.*</exclude>
+                                <exclude>**/*Config.*</exclude>
+                                <exclude>co/com/pragma/accounts/grpc/v1/**</exclude>
+                            </excludes>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.min}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
