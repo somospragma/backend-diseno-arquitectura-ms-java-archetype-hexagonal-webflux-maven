@@ -45,7 +45,7 @@
         <jacoco.version>0.8.12</jacoco.version>
         <pitest.version>1.19.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
-        <owasp.version>12.1.0</owasp.version>
+        <owasp.version>13.0.0</owasp.version>
 
         <!-- Gate de cobertura del artefacto -->
         <coverage.min>0.90</coverage.min>
