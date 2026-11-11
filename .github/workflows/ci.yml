@@ -34,7 +34,10 @@ jobs:
         run: ./mvnw -B clean verify
       # Mutation testing del dominio (umbral 60%)
       - name: Mutation testing (domain)
-        run: ./mvnw -B -pl domain/usecases org.pitest:pitest-maven:mutationCoverage
+        # -am instala model/ports (dependencias de usecases); los tests ya corrieron arriba.
+        run: |
+          ./mvnw -B -q -DskipTests -pl domain/usecases -am install
+          ./mvnw -B -pl domain/usecases org.pitest:pitest-maven:mutationCoverage
       # SCA sobre el jar ejecutable: contiene las dependencias reales de runtime.
       - name: Dependency scan (trivy, HIGH/CRITICAL)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -57,10 +60,10 @@ jobs:
         with:
           name: sbom-cyclonedx
           path: sbom.cdx.json
-      # SonarQube: corre solo si el repo tiene los secretos SONAR_TOKEN y SONAR_HOST_URL.
+      # SonarQube: corre solo si existen ambos secretos, SONAR_TOKEN y SONAR_HOST_URL.
       - name: SonarQube analysis
-        if: env.SONAR_TOKEN != ''
-        run: ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
+        run: ./mvnw -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar
 
   secrets:
     name: Secret scan (gitleaks)
