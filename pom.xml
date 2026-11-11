@@ -26,7 +26,7 @@
         <blockhound.version>1.0.9.RELEASE</blockhound.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <logstash-encoder.version>8.0</logstash-encoder.version>
-        <springdoc.version>2.7.0</springdoc.version>
+        <springdoc.version>3.2.0</springdoc.version>
         <mockito.version>5.14.2</mockito.version>
         <reactor-kafka.version>1.3.23</reactor-kafka.version>
         <grpc.version>1.85.1</grpc.version>
